@@ -299,7 +299,7 @@ main {
     overflow-y: auto;
     & video {
         width: 95%;
-        height: 95%;
+        // height: 95%;
         display: block;
         margin: auto;
     }

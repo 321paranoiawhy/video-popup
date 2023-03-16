@@ -195,13 +195,13 @@ const isVideoPaused = ref(true);
             @play="onVideoPlay"
         ></video>
 
-        <img
+        <!-- <img
             v-if="isVideoPaused"
             src="/MaterialSymbolsPlayCircleOutlineRounded.svg"
             alt=""
             class="play-icon"
             @click="onClickPlayIcon"
-        />
+        /> -->
     </div>
 
     <!-- <iframe
