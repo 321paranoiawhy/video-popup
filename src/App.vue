@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // import HelloWorld from './components/HelloWorld.vue'
-import { ref, onMounted } from "vue";
+import { ref, computed } from "vue";
 // import Popup from "./components/Popup.vue";
 
 import { getPopupZIndex } from "./utils/popupZIndex";
@@ -17,52 +17,37 @@ const onPopup = () => {
 
 const onPopupClose = () => {
     showPopup.value = false;
+    temp = 0.5;
+    // 重新播放视频
+    isVideoPaused.value = false;
     videoDOM.value.play();
-    // 重置
-    // globalThis.__popupZIndex__ = 0;
 };
 
-document.onkeydown = (e) => {
-    if (e.keyCode === 32 ||e.which === 32) {
-        const video = document.querySelectorAll("video");
-        const lastVideo = video[video.length - 1];
-        if (lastVideo.paused) {
-            lastVideo.play();
-        } else {
-            lastVideo.pause();
-        }
-    }
-};
+// document.onkeydown = (e) => {
+//     if (e.keyCode === 32 || e.which === 32) {
+//         const video = document.querySelectorAll("video");
+//         const lastVideo = video[video.length - 1];
+//         if (lastVideo.paused) {
+//             lastVideo.play();
+//         } else {
+//             lastVideo.pause();
+//         }
+//     }
+// };
 
 const videoDOM = ref();
 
 const timeline = ref<any>([]);
 
+let temp = 0;
+
 const onTimeupdate = () => {
-    const currentTime = videoDOM.value.currentTime;
-    // let index;
-    // for (let i = 0; i < mockContent.length; i++) {
-    //     const element = mockContent[i];
-    //     if (i == mockContent.length - 1) {
-    //     }
-    //     if (
-    //         Math.abs(element.time - currentTime) <= 0.2 &&
-    //         mockContent[i + 1].time >= currentTime
-    //     ) {
-    //         index = i;
-    //         return;
-    //     }
-    // }
+    const currentTime = videoDOM.value.currentTime + temp;
     const index = mockContent.findIndex(
         (item) => Math.abs(item.time - currentTime) <= 0.15
     );
-    // const index = mockContent.findIndex((item, index) => {
-    //     return (
-    //         Math.abs(item.time - currentTime) <= 0.2 &&
-    //         mockContent[index + 1].time >= currentTime
-    //     );
-    // });
-    console.log(currentTime, index);
+
+    // console.log(currentTime, index);
 
     if (index >= 0 && index < mockContent.length) {
         timeline.value = [mockContent[index]];
@@ -72,11 +57,37 @@ const onTimeupdate = () => {
     }
 };
 
-// onMounted(() => {
-//   videoDOM
-// }),
+// const mockContent = mockJSON;
+const mockContent = mockJSON.sort((a, b) => a.time - b.time);
 
-const mockContent = mockJSON;
+const onVideoPause = () => {
+    isVideoPaused.value = true;
+};
+
+const onVideoPlay = () => {
+    isVideoPaused.value = false;
+};
+
+const onClickPlayIcon = () => {
+    if (videoDOM.value.paused) {
+        isVideoPaused.value = false;
+        videoDOM.value.play();
+    } else {
+        isVideoPaused.value = true;
+        videoDOM.value.pause();
+    }
+};
+
+const isVideoPaused = ref(true);
+
+// const isVideoPaused = computed(() => {
+//     // if (videoDOM.value && videoDOM.value.paused) {
+//     //     return true;
+//     // } else {
+//     //     return false;
+//     // }
+//     return Boolean(videoDOM.value && videoDOM.value.paused);
+// });
 
 // const mockContent = [
 //     {
@@ -173,13 +184,25 @@ const mockContent = mockJSON;
         amet, pariatur fuga voluptatem omnis similique?
     </div> -->
 
-    <video
-        src="./assets/test.mp4"
-        controls
-        preload="auto"
-        ref="videoDOM"
-        @timeupdate="onTimeupdate"
-    ></video>
+    <div class="app-root">
+        <video
+            src="./assets/little_bear_and_his_mom.mp4"
+            controls
+            preload="auto"
+            ref="videoDOM"
+            @timeupdate="onTimeupdate"
+            @pause="onVideoPause"
+            @play="onVideoPlay"
+        ></video>
+
+        <img
+            v-if="isVideoPaused"
+            src="/MaterialSymbolsPlayCircleOutlineRounded.svg"
+            alt=""
+            class="play-icon"
+            @click="onClickPlayIcon"
+        />
+    </div>
 
     <!-- <iframe
         src="https://www.bilibili.com/video/BV19y4y1Z7Qr/"
@@ -209,10 +232,30 @@ const mockContent = mockJSON;
 </template>
 
 <style scoped>
+.app-root {
+    position: absolute;
+    /* top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto; */
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
 video {
     display: block;
     /* margin: 1rem auto; */
     width: 100vw;
-    height: 100vh;
+    /* height: 100vh; */
+}
+.play-icon {
+    width: 128px;
+    height: 128px;
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    cursor: pointer;
+    user-select: none;
 }
 </style>

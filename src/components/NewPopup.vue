@@ -1,7 +1,7 @@
 <template>
     <transition name="fade">
         <!-- 遮罩层 -->
-        <div class="popup-wrapper">
+        <div class="popup-wrapper" @click="onClickOutside">
             <!-- header + main -->
             <div class="popup-container" :style="{ 'z-index': props.zIndex }">
                 <!-- <header>
@@ -39,10 +39,79 @@
                     <!-- <div>问: </div> -->
                     <!-- <div>答: </div> -->
                     <!-- <div v-for="item in props.content[currentTip - 1].content">{{ item }}</div> -->
+
                     <div
+                        class="question-root"
+                        v-if="props.content[currentTip - 1].isQuestion"
+                    >
+                        <div class="callout-title">
+                            <!-- <div class="callout-icon"> -->
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="svg-icon lucide-help-circle"
+                            >
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path
+                                    d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+                                ></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                            <!-- </div> -->
+                            <div class="callout-title-inner">问题</div>
+                        </div>
+                        <div
+                            class="callout-content"
+                            v-html="props.content[currentTip - 1].content"
+                        ></div>
+                    </div>
+
+                    <div
+                        class="answer-root"
+                        v-if="props.content[currentTip - 1].isAnswer"
+                    >
+                        <div class="callout-title">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="svg-icon lucide-check"
+                            >
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <div class="callout-title-inner">答案</div>
+                        </div>
+                        <div
+                            class="callout-content"
+                            v-html="props.content[currentTip - 1].content"
+                        ></div>
+                    </div>
+
+                    <video
+                        v-if="props.content[currentTip - 1].isVideo"
+                        controls
+                        preload="auto"
+                        :src="props.content[currentTip - 1].content"
+                    ></video>
+
+                    <!-- <div
                         v-for="item in props.content[currentTip - 1].content"
                         v-html="item"
-                    ></div>
+                    ></div> -->
+
                     <!-- {{ props.content[currentTip - 1].content }} -->
 
                     <!-- <div>
@@ -75,12 +144,11 @@ import { getPopupZIndex } from "../utils/popupZIndex";
 
 import renderPopup from "./renderPopup";
 
-import Fireworks from "./Fireworks.vue";
+// import Fireworks from "./Fireworks.vue";
 
 import { pauseAllVideos } from "../utils/pauseAllVideos";
 
 interface PopupProperties {
-    // showPopup: boolean; // 必传
     zIndex: number;
     totalTips?: number; // 总信息数量
     currentTip?: number; // 当前信息: 1 ~ totalTips
@@ -89,7 +157,6 @@ interface PopupProperties {
 }
 
 const props = withDefaults(defineProps<PopupProperties>(), {
-    // showPopup: true,
     totalTips: 4,
     currentTip: 1,
 });
@@ -106,6 +173,16 @@ const onBack = () => {
 const onForward = () => {
     if (currentTip.value < props.totalTips) {
         currentTip.value++;
+    }
+};
+
+const onClickOutside = (e: Event) => {
+    const target = e.target as HTMLElement;
+    const conditionA =
+        target.nodeName.toLowerCase() === "div" &&
+        target.classList.contains("popup-wrapper");
+    if (conditionA) {
+        emit("close", false);
     }
 };
 
@@ -150,6 +227,8 @@ const onClose = () => {
 </script>
 
 <style lang="scss" scoped>
+@import url(../css/QuestionCallout.css);
+@import url(../css/AnswerCallout.css);
 // 动画过渡效果
 .fade-enter-from,
 .fade-leave-to {
@@ -212,13 +291,20 @@ header {
 }
 main {
     flex: 1;
-    text-align: center;
+    // text-align: center;
     margin-top: calc(1rem + 32px);
     // & div {
     //     padding: 1rem;
     // }
     overflow-y: auto;
+    & video {
+        width: 95%;
+        height: 95%;
+        display: block;
+        margin: auto;
+    }
 }
+
 header,
 main {
     // z-index 继承自 .popup-container
@@ -233,47 +319,5 @@ img.close {
     height: 32px;
     cursor: pointer;
     user-select: none;
-}
-
-// 烟花动效
-.fireworks {
-    position: absolute;
-    width: 150px;
-    height: 150px;
-    /*     padding-bottom: 100px; */
-    background: url("https://imgservices-1252317822.image.myqcloud.com/image/081320210201435/e9951400.png")
-        right top no-repeat;
-    background-size: auto 150px;
-    animation: fireworks 2s steps(24) infinite, random 8s steps(1) infinite;
-}
-@keyframes fireworks {
-    0% {
-        background-position: 0%;
-    }
-    50%,
-    100% {
-        background-position: 100% 100%;
-    }
-}
-
-@keyframes random {
-    0% {
-        transform: translate(0, 0);
-    }
-    25% {
-        transform: translate(200%, 50%) scale(0.8);
-    }
-    50% {
-        transform: translate(80%, 80%) scale(1.2);
-    }
-    75% {
-        transform: translate(20%, 60%) scale(0.65);
-    }
-}
-@media screen and (prefers-reduced-motion) {
-    /* 禁用不必要的动画 */
-    .fireworks {
-        animation: none;
-    }
 }
 </style>

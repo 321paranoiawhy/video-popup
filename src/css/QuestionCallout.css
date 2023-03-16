@@ -1,0 +1,20 @@
+.question-root {
+    padding: 12px 12px 12px 24px;
+    margin: 16px auto;
+    width: 80%;
+    background-color: rgba(224, 172, 0, 0.1);
+}
+
+.question-root .callout-title {
+    display: flex;
+    column-gap: 4px;
+    color: rgb(224, 172, 0);
+    font-size: 16px;
+    line-height: 1.3;
+    align-items: center;
+}
+
+.question-root .callout-content {
+    color: #222222;
+    margin-top: 16px;
+}
